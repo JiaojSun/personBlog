@@ -23,7 +23,6 @@ $(function() {
             },
             dataType: 'json',
             success: function(result) {
-                console.log(result);
                 $('#messageShow').html(result.message);
                 if (!result.code) {
                     setTimeout(function() {

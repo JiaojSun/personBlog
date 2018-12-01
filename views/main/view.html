@@ -22,7 +22,7 @@
             <span class="fl">评论</span>
             <span class="fr">一共有<span id="commentNum"></span>条评论</span>
         </div>
-        {% if userinfo.id %}
+        {% if userInfo._id %}
         <div class="formWrap">
             <input type="hidden" id="contentId" value="{{content.id}}"/>
             <textarea  rows="3" class="form-control" name="content" id="content"></textarea>
