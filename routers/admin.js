@@ -33,39 +33,39 @@ router.get('/', function(req, res, next) {
     /**
      * 用户管理
      */
-router.get('/user', function (req, res, next) {
-    /**
-     * 从数据库读取所有的用户数据
-     * 
-     * limit(Number):限制获取的数据条数
-     * 
-     * skip(2):忽略数据的条数
-     * skip = (当前页-1）*limit
-     */
-    var page = Number(req.query.page || 1);
-    var limit = 2;
-    var pages = 0;
-    User.count().then(function (count) {
-        // 计算总页数
-        pages = Math.ceil(count / limit);
-        // 取值不能超过pages
-        page = Math.min(page, pages);
-        // 取值不能小于1
-        page = Math.max(page, 1);
-        var skip = (page - 1) * limit;
-        User.find().limit(limit).skip(skip).then(function (users) {
-            res.render('admin/user_index', {
-                userinfo: req.userInfo,
-                users: users,
+router.get('/user', function(req, res, next) {
+        /**
+         * 从数据库读取所有的用户数据
+         * 
+         * limit(Number):限制获取的数据条数
+         * 
+         * skip(2):忽略数据的条数
+         * skip = (当前页-1）*limit
+         */
+        var page = Number(req.query.page || 1);
+        var limit = 2;
+        var pages = 0;
+        User.count().then(function(count) {
+            // 计算总页数
+            pages = Math.ceil(count / limit);
+            // 取值不能超过pages
+            page = Math.min(page, pages);
+            // 取值不能小于1
+            page = Math.max(page, 1);
+            var skip = (page - 1) * limit;
+            User.find().limit(limit).skip(skip).then(function(users) {
+                res.render('admin/user_index', {
+                    userinfo: req.userInfo,
+                    users: users,
 
-                count: count,
-                pages: pages,
-                limit: limit,
-                page: page
+                    count: count,
+                    pages: pages,
+                    limit: limit,
+                    page: page
+                });
             });
-        });
+        })
     })
-})
     /**
      * 分类首页
      */
@@ -172,13 +172,13 @@ router.get('/category/edit', function(req, res) {
 /**
  * 分类的修改保存
  */
-router.post('/category/edit', function (req, res) {
+router.post('/category/edit', function(req, res) {
     // 获取要修改的分类的信息，并且用表单的形式展现出来
     var id = req.query.id || '';
     if (id.match(/^[0-9a-fA-F]{24}$/)) {
         // 获取post提交过来的名称
         var name = req.body.name || '';
-        Category.findOne({ _id: id }).then(function (category) {
+        Category.findOne({ _id: id }).then(function(category) {
             if (!category) {
                 res.render("admin/error", {
                     userinfo: req.userInfo,
@@ -202,7 +202,7 @@ router.post('/category/edit', function (req, res) {
                     });
                 }
             }
-        }).then(function (sameCategory) {
+        }).then(function(sameCategory) {
             if (sameCategory) {
                 res.render("admin/error", {
                     userinfo: req.userInfo,
@@ -213,10 +213,10 @@ router.post('/category/edit', function (req, res) {
                 return Category.update({
                     _id: id
                 }, {
-                        name: name
-                    })
+                    name: name
+                })
             }
-        }).then(function () {
+        }).then(function() {
             res.render("admin/success", {
                 userinfo: req.userInfo,
                 message: "修改成功",
@@ -247,7 +247,7 @@ router.get('/category/delete', function(req, res) {
 /**
  * 内容首页
  */
-router.get('/content', function (req, res, next) {
+router.get('/content', function(req, res, next) {
     /**
      * 从数据库读取所有的用户数据
      * 
@@ -259,7 +259,7 @@ router.get('/content', function (req, res, next) {
     var page = Number(req.query.page || 1);
     var limit = 2;
     var pages = 0;
-    Content.count().then(function (count) {
+    Content.count().then(function(count) {
         // 计算总页数
         pages = Math.ceil(count / limit);
         // 取值不能超过pages
@@ -267,7 +267,8 @@ router.get('/content', function (req, res, next) {
         // 取值不能小于1
         page = Math.max(page, 1);
         var skip = (page - 1) * limit;
-        Content.find().limit(limit).skip(skip).populate('category').then(function (contents) {
+        // populate 用于读取扩展信息
+        Content.find().limit(limit).skip(skip).populate(['category', 'user']).sort({ addTime: -1 }).then(function(contents) {
             res.render('admin/content', {
                 userinfo: req.userInfo,
                 contents: contents,
@@ -284,9 +285,9 @@ router.get('/content', function (req, res, next) {
 /**
  * 内容添加首页
  */
-router.get('/content/add', function(req,res){
-    Category.find().sort({_id: -1}).then(function(categories){
-        res.render('admin/content_add',{
+router.get('/content/add', function(req, res) {
+    Category.find().sort({ _id: -1 }).then(function(categories) {
+        res.render('admin/content_add', {
             userinfo: req.userInfo,
             categories: categories
         })
@@ -296,16 +297,16 @@ router.get('/content/add', function(req,res){
 /**
  * 内容保存
  */
-router.post('/content/add', function(req,res) {
-    if(req.body.category == ''){
-        res.render('admin/error',{
+router.post('/content/add', function(req, res) {
+    if (req.body.category == '') {
+        res.render('admin/error', {
             userinfo: req.userInfo,
             message: '内容分类不能为空'
         })
     }
 
-    if(req.body.title == ''){
-        res.render('admin/error',{
+    if (req.body.title == '') {
+        res.render('admin/error', {
             userinfo: req.userInfo,
             message: '内容标题不能为空'
         })
@@ -315,8 +316,9 @@ router.post('/content/add', function(req,res) {
     new Content({
         category: req.body.category,
         title: req.body.title,
-        description:req.body.description,
-        content:req.body.content
+        user: req.userInfo._id.toString(),
+        description: req.body.description,
+        content: req.body.content
     }).save().then(function() {
         res.render("admin/success", {
             userinfo: req.userInfo,
@@ -334,7 +336,7 @@ router.get('/content/edit', function(req, res) {
     var id = req.query.id || '';
     var categories = [];
 
-    Category.find().sort({_id: -1}).then(function(rs){
+    Category.find().sort({ _id: -1 }).then(function(rs) {
         // 找到该文章所对应的分类信息
         categories = rs;
         return Content.findOne({
@@ -360,17 +362,17 @@ router.get('/content/edit', function(req, res) {
 /**
  * 保存修改内容
  */
-router.post('/content/edit', function(req,res) {
+router.post('/content/edit', function(req, res) {
     var id = req.query.id || '';
-    if(req.body.category == ''){
-        res.render('admin/error',{
+    if (req.body.category == '') {
+        res.render('admin/error', {
             userinfo: req.userInfo,
             message: '内容分类不能为空'
         })
     }
 
-    if(req.body.title == ''){
-        res.render('admin/error',{
+    if (req.body.title == '') {
+        res.render('admin/error', {
             userinfo: req.userInfo,
             message: '内容标题不能为空'
         })
@@ -381,15 +383,15 @@ router.post('/content/edit', function(req,res) {
     }, {
         category: req.body.category,
         title: req.body.title,
-        description:req.body.description,
-        content:req.body.content
+        description: req.body.description,
+        content: req.body.content
     }).then(function() {
         res.render("admin/success", {
             userinfo: req.userInfo,
             message: "内容保存成功",
-            url: "/admin/content/edit?id="+ id
+            url: "/admin/content/edit?id=" + id
         });
-    }).catch(function (error) {//加上catch 
+    }).catch(function(error) { //加上catch 
         console.log(error);
     })
 })
