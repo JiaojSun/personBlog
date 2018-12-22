@@ -70,14 +70,22 @@ app.use('/api', require('./routers/api'));
 app.use('/', require('./routers/main'));
 
 // 监听http请求
-mongoose.connect('mongodb://localhost:27017/bolg', { useNewUrlParser: true }, function(err) {
+mongoose.connect('mongodb://localhost:27017/bolg', { useMongoClient: true }, function (err) {
+    if (err) {
+        console.log('数据库连接失败'+err);
+    } else {
+        app.listen(27017);
+        console.log('数据库连接成功');
+    }
+});
+/* mongoose.connect('mongodb://localhost:27017/bolg', { useNewUrlParser: true }, function(err) {
     if (err) {
         console.log('数据库连接失败');
     } else {
         app.listen(27017);
         console.log('数据库连接成功');
     }
-});
+}); */
 
 
 /**

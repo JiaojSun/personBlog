@@ -4,6 +4,7 @@ var express = require('express');
 var router = express.Router();
 var User = require('../models/User');
 var Content = require("../models/content");
+var Category = require("../models/category");
 
 // 统一返回格式
 var responseData;
@@ -132,7 +133,7 @@ router.post('/user/logout', function (req, res) {
 /**
  * 获取指定文章的所有评论
  */
-router.get('/comment', function (req, res) {
+/* router.get('/comment', function (req, res) {
     // 内容id
     var contentId = req.query.contentId || '';
     Content.findOne({
@@ -140,6 +141,35 @@ router.get('/comment', function (req, res) {
     }).then(function (content) {
         responseData.data = content;
         res.json(responseData);
+    });
+
+}) */
+
+router.get('/comment', function (req, res) {
+    var page = Number(req.query.page || 1);
+    var limit = 2;
+    var pages = 0;
+    var contentId = req.query.contentId || '';
+
+    Category.count().then(function(count) {
+        // 计算总页数
+        pages = Math.ceil(count / limit);
+        // 取值不能超过pages
+        page = Math.min(page, pages);
+        // 取值不能小于1
+        page = Math.max(page, 1);
+        var skip = (page - 1) * limit;  
+
+        Content.findOne({
+            _id: contentId
+        })
+        .sort({ _id: -1 })
+        .limit(limit)
+        .skip(skip)
+        .then(function (content) {
+            responseData.data = content;
+            res.json(responseData);
+        });
     });
 
 })
